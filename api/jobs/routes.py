@@ -5,8 +5,8 @@ from config import Endpoints
 jobs_router = APIRouter()
 
 
-@jobs_router.post(Endpoints.CREATE_JOB)
-def create_job():
+@jobs_router.post(Endpoints.REGISTER_JOB)
+def register_job():
     ...
 
 
