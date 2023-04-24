@@ -1,1 +1,4 @@
-from fastapi import FastAPI
+from database.surreal import SurrealDatabase
+
+if __name__ == "__main__":
+    surreal = SurrealDatabase()

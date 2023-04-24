@@ -1,12 +1,41 @@
-from abc import ABC, abstractmethod
+import asyncio
 from typing import List
 
-from .database_types import Job, RegisterJob, DeleteJob
+from surrealdb import SurrealHTTP
+
+from .database import Database, RegisterJob, Job, DeleteJob
+
+from config import Databases
 
 
-class Database(ABC):
+class SurrealDatabase(Database):
+    def __init__(self) -> None:
+        self.surreal: SurrealHTTP = SurrealHTTP(
+            Databases.SURREAL,
+            username="root",
+            password="root",
+            namespace="ns",
+            database="db",
+        )
+
+        asyncio.run(self.surreal.connect())
+
+    def _create(self, id: str, data: dict):
+        return asyncio.run(self.surreal.create(id, data))
+
+    def _select(self, id: str):
+        return asyncio.run(self.surreal.select(id))
+
+    def _update(self, id: str, data: dict):
+        return asyncio.run(self.surreal.update(id, data))
+
+    def _delete(self, id: str):
+        return asyncio.run(self.surreal.delete(id))
+
+    def _query(self, query: str, data: dict = None):
+        return asyncio.run(self.surreal.query(query, data))
+
     # * Static Jobs
-    @abstractmethod
     def register_job(
         self,
         workspace_id: str,
@@ -17,7 +46,6 @@ class Database(ABC):
     ) -> RegisterJob:
         ...
 
-    @abstractmethod
     def get_job(
         self,
         workspace_id: str,
@@ -25,7 +53,6 @@ class Database(ABC):
     ) -> Job:
         ...
 
-    @abstractmethod
     def delete_job(
         self,
         workspace_id: str,
@@ -33,7 +60,6 @@ class Database(ABC):
     ) -> DeleteJob:
         ...
 
-    @abstractmethod
     def get_jobs(
         self,
         workspace_id: str = None,
@@ -42,7 +68,6 @@ class Database(ABC):
         ...
 
     # * Job Runs
-    @abstractmethod
     def run_job(
         self,
         job_name: str,
@@ -52,21 +77,18 @@ class Database(ABC):
     ):
         ...
 
-    @abstractmethod
     def get_job_run(
         self,
         run_id: str,
     ):
         ...
 
-    @abstractmethod
     def delete_job_run(
         self,
         run_id: str,
     ):
         ...
 
-    @abstractmethod
     def modify_job_run(
         self,
         run_id: str,
@@ -74,7 +96,6 @@ class Database(ABC):
     ):
         ...
 
-    @abstractmethod
     def get_job_runs(
         self,
         job_name: str,
@@ -83,7 +104,6 @@ class Database(ABC):
         # Should just return basic metadata info about the runs, not everything
         ...
 
-    @abstractmethod
     def count_job_runs(
         self,
         job_name: str,
@@ -91,7 +111,6 @@ class Database(ABC):
     ):
         ...
 
-    @abstractmethod
     def run_task(
         self,
         run_id: str,
@@ -100,14 +119,12 @@ class Database(ABC):
     ):
         ...
 
-    @abstractmethod
     def get_task_run(
         self,
         task_id: str,
     ):
         ...
 
-    @abstractmethod
     def modify_task_run(
         self,
         task_id: str,
