@@ -14,6 +14,17 @@ class Database(ABC):
         tags: list[str] | None,
         environment: str | None,
     ) -> RegisterJob:
+        """Register a new Job, if already registered, does nothing.
+
+        Args:
+            workspace_id (str): The workspace this job sits in
+            job_name (str): The unique name of this job
+            tags (list[str] | None): Any tags that apply to this job
+            environment (str | None): The environment this job should run in
+
+        Returns:
+            RegisterJob: Status of creation
+        """
         ...
 
     @abstractmethod
@@ -22,6 +33,15 @@ class Database(ABC):
         workspace_id: str,
         job_name: str,
     ) -> Job:
+        """Get information about a registered job
+
+        Args:
+            workspace_id (str): The workspace this job sits in
+            job_name (str): The unique identifier of this job
+
+        Returns:
+            Job: The job
+        """
         ...
 
     @abstractmethod
@@ -30,6 +50,15 @@ class Database(ABC):
         workspace_id: str,
         job_name: str,
     ) -> DeleteJob:
+        """Delete a registered job
+
+        Args:
+            workspace_id (str): The workspace this job sits in
+            job_name (str): The unique identifier of this job
+
+        Returns:
+            DeleteJob: Database response
+        """
         ...
 
     @abstractmethod
@@ -58,9 +87,16 @@ class Database(ABC):
         job_name: str,
         run_id: str,
         data: dict,
-        # Does this job get called inside of another job?
-        parent: str = None,
+        environment: str = None,
     ):
+        """Run a registered job
+
+        Args:
+            job_name (str): The registered job unique identifier
+            run_id (str): A unique identifier for this specific run
+            data (dict): Any data this run should hold
+            environment (str, optional): The environment this job ran in. Defaults to None.
+        """  # noqa: E501
         ...
 
     @abstractmethod
@@ -68,6 +104,11 @@ class Database(ABC):
         self,
         run_id: str,
     ):
+        """Get a job run for a specific run
+
+        Args:
+            run_id (str): The unique run ID to fetch
+        """
         ...
 
     @abstractmethod
@@ -75,6 +116,11 @@ class Database(ABC):
         self,
         run_id: str,
     ):
+        """Delete a run job
+
+        Args:
+            run_id (str): The unique run ID to delete
+        """
         ...
 
     @abstractmethod
@@ -83,13 +129,18 @@ class Database(ABC):
         run_id: str,
         changes: dict,
     ):
+        """Update a job run, if job doesn't exist, return error
+
+        Args:
+            run_id (str): The unique run ID to update
+            changes (dict): key-value pair of changes to make
+        """
         ...
 
     @abstractmethod
     def get_job_runs(
         self,
         job_name: str,
-        # TODO: This should take more query parameters
         query: str = None,
     ):
         """Get all the runs for a specific job
@@ -121,7 +172,16 @@ class Database(ABC):
         run_id: str,
         task_id: str,
         data: dict,
+        parent: str = None,
     ):
+        """Run a task inside of a job
+
+        Args:
+            run_id (str): The run ID this task is executed in
+            task_id (str): A unique ID for this specific task
+            data (dict): Any data this task should hold
+            parent (str, optional): The parent this task was called inside of. Defaults to None.
+        """  # noqa: E501
         ...
 
     @abstractmethod
@@ -129,6 +189,11 @@ class Database(ABC):
         self,
         task_id: str,
     ):
+        """Get a task run
+
+        Args:
+            task_id (str): The unique task run ID
+        """
         ...
 
     @abstractmethod
@@ -150,4 +215,10 @@ class Database(ABC):
         task_id: str,
         changes: dict,
     ):
+        """Update a task run
+
+        Args:
+            task_id (str): The unique task run ID to update
+            changes (dict): key-value pairs of changes to make
+        """
         ...
