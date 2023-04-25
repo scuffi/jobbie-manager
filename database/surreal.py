@@ -1,7 +1,6 @@
-import asyncio
 from typing import List
 
-from surrealdb import SurrealHTTP
+import pysurrealdb
 
 from .database import Database, RegisterJob, Job, DeleteJob
 
@@ -10,30 +9,14 @@ from config import Databases
 
 class SurrealDatabase(Database):
     def __init__(self) -> None:
-        self.surreal: SurrealHTTP = SurrealHTTP(
-            Databases.SURREAL,
-            username="root",
+        self.surreal = pysurrealdb.connect(
+            host=Databases.SURREAL_HOST,
+            port=Databases.SURREAL_PORT,
+            user="root",
             password="root",
             namespace="ns",
             database="db",
         )
-
-        asyncio.run(self.surreal.connect())
-
-    def _create(self, id: str, data: dict):
-        return asyncio.run(self.surreal.create(id, data))
-
-    def _select(self, id: str):
-        return asyncio.run(self.surreal.select(id))
-
-    def _update(self, id: str, data: dict):
-        return asyncio.run(self.surreal.update(id, data))
-
-    def _delete(self, id: str):
-        return asyncio.run(self.surreal.delete(id))
-
-    def _query(self, query: str, data: dict = None):
-        return asyncio.run(self.surreal.query(query, data))
 
     # * Static Jobs
     def register_job(

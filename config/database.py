@@ -1,2 +1,3 @@
 class Databases:
-    SURREAL = "http://localhost:8000"
+    SURREAL_HOST = "localhost"
+    SURREAL_PORT = "8000"
