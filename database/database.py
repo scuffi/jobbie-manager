@@ -105,7 +105,6 @@ class Database(ABC):
     def count_job_runs(
         self,
         job_name: str,
-        # TODO: This should take more query parameters
         query: str = None,
     ):
         """Count the job runs for a specific job
@@ -121,7 +120,7 @@ class Database(ABC):
         self,
         run_id: str,
         task_id: str,
-        # TODO: Should take more options like tags, descriptions, start time, etc
+        data: dict,
     ):
         ...
 
@@ -130,6 +129,19 @@ class Database(ABC):
         self,
         task_id: str,
     ):
+        ...
+
+    @abstractmethod
+    def get_task_runs(
+        self,
+        run_id: str,
+    ):
+        """Get all the run tasks for a given run
+
+        Args:
+            run_id (str): The id of the run to get tasks for
+        """
+        # Should return metadata about the tasks, not all information
         ...
 
     @abstractmethod
