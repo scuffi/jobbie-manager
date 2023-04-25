@@ -11,7 +11,6 @@ class Database(ABC):
         self,
         workspace_id: str,
         job_name: str,
-        # TODO: Add more configurable parameters here
         tags: list[str] | None,
         environment: str | None,
     ) -> RegisterJob:
@@ -36,9 +35,20 @@ class Database(ABC):
     @abstractmethod
     def get_jobs(
         self,
+        query: str,
         workspace_id: str = None,
         node_id: str = None,
     ) -> List[Job]:
+        """Allow searching for jobs with a given query
+
+        Args:
+            query (str): The query to search for
+            workspace_id (str, optional): Workspace to search in. Defaults to None.
+            node_id (str, optional): Node to match against. Defaults to None.
+
+        Returns:
+            List[Job]: _description_
+        """
         ...
 
     # * Job Runs
@@ -47,6 +57,7 @@ class Database(ABC):
         self,
         job_name: str,
         run_id: str,
+        data: dict,
         # Does this job get called inside of another job?
         parent: str = None,
     ):
@@ -79,7 +90,14 @@ class Database(ABC):
         self,
         job_name: str,
         # TODO: This should take more query parameters
+        query: str = None,
     ):
+        """Get all the runs for a specific job
+
+        Args:
+            job_name (str): The job id to get the runs for
+            query (str, optional): Optional query to filter unwanted runs. Defaults to None.
+        """  # noqa: E501
         # Should just return basic metadata info about the runs, not everything
         ...
 
@@ -88,7 +106,14 @@ class Database(ABC):
         self,
         job_name: str,
         # TODO: This should take more query parameters
+        query: str = None,
     ):
+        """Count the job runs for a specific job
+
+        Args:
+            job_name (str): The job id to count the runs for
+            query (str, optional): Optional query to filter unwanted runs. Defaults to None.
+        """  # noqa: E501
         ...
 
     @abstractmethod
