@@ -2,7 +2,7 @@ from typing import List
 import time
 import pysurrealdb
 
-from .database import Database, Job, DeleteJob
+from .database import Database, Job, Run, Task
 
 from config import Databases
 
@@ -17,6 +17,8 @@ class SurrealDatabase(Database):
             namespace="test",
             database="test",
         )
+
+    # TODO: Refactor so every create uses the Datatype instead, so it's always consistent
 
     # * Static Jobs
     def register_job(
@@ -74,7 +76,7 @@ class SurrealDatabase(Database):
     def delete_job(
         self,
         job_id: str,
-    ) -> DeleteJob:
+    ) -> None:
         """Delete a registered job
 
         Args:
@@ -83,8 +85,8 @@ class SurrealDatabase(Database):
         Returns:
             DeleteJob: Database response
         """
-        # TODO: Wrap in DeleteJob
-        return self.surreal.delete(f"job:{job_id}")
+        # TODO: Should delete all run jobs first
+        self.surreal.delete(f"job:{job_id}")
 
     def get_jobs(
         self,
@@ -115,7 +117,7 @@ class SurrealDatabase(Database):
         run_id: str,
         tags: List[str] = None,
         version: str = "0.0.1",
-    ):
+    ) -> Run:
         """Run a registered job
 
         Args:
@@ -125,59 +127,63 @@ class SurrealDatabase(Database):
             tags (list[str]): Any tags that apply to this job run
             environment (str, optional): The environment this job ran in. Defaults to None.
         """  # noqa: E501
-        return self.surreal.create(
-            f"run:{run_id}",
-            {
-                "job_id": job_id,  # TODO: Should this be a reference or just the ID?
-                "start_time": int(time.time()),
-                "end_time": None,
-                "status": "running",
-                "tags": tags,
-                "tasks": [],
-                "version": version,
-            },
+        return Run.from_list(
+            self.surreal.create(
+                f"run:{run_id}",
+                {
+                    "job_id": job_id,  # TODO: Should this be a reference or just the ID?
+                    "start_time": int(time.time()),
+                    "end_time": None,
+                    "status": "running",
+                    "tags": tags,
+                    "tasks": [],
+                    "version": version,
+                },
+            )
         )
 
     def get_job_run(
         self,
         run_id: str,
-    ):
+    ) -> Run:
         """Get a job run for a specific run
 
         Args:
             run_id (str): The unique run ID to fetch
         """
-        return self.surreal.get(f"run:{run_id}")
+        return Run.from_list(self.surreal.get(f"run:{run_id}"))
 
     def delete_job_run(
         self,
         run_id: str,
-    ):
+    ) -> None:
         """Delete a run job
 
         Args:
             run_id (str): The unique run ID to delete
         """
-        return self.surreal.delete(f"job:{run_id}")
+
+        # TODO: Should also delete all task runs first
+        self.surreal.delete(f"job:{run_id}")
 
     def modify_job_run(
         self,
         run_id: str,
         changes: dict,
-    ):
+    ) -> Run:
         """Update a job run, if job doesn't exist, return error
 
         Args:
             run_id (str): The unique run ID to update
             changes (dict): key-value pair of changes to make
         """
-        return self.surreal.update(f"run:{run_id}", changes)
+        return Run.from_list(self.surreal.update(f"run:{run_id}", changes))
 
     def get_job_runs(
         self,
         job_id: str,
         query: str = None,
-    ):
+    ) -> List[Run]:
         """Get all the runs for a specific job
 
         Args:
@@ -185,44 +191,48 @@ class SurrealDatabase(Database):
             query (str, optional): Optional query to filter unwanted runs. Defaults to None.
         """  # noqa: E501
         if query:
-            return self.surreal.query(
-                f"SELECT * FROM run WHERE job_id == '{job_id}' AND {query}"
+            return Run.from_list(
+                self.surreal.query(
+                    f"SELECT * FROM run WHERE job_id == '{job_id}' AND {query}"
+                )
             )
 
-        return self.surreal.query(f"SELECT * FROM run WHERE job_id == '{job_id}'")
+        return Run.from_list(
+            self.surreal.query(f"SELECT * FROM run WHERE job_id == '{job_id}'")
+        )
 
     def count_job_runs(
         self,
         job_id: str,
         query: str = None,
-    ):
+    ) -> int:
         """Count the job runs for a specific job
 
         Args:
             job_name (str): The job id to count the runs for
             query (str, optional): Optional query to filter unwanted runs. Defaults to None.
         """  # noqa: E501
+        # TODO: Add support for complex query here
 
-        # TODO: Refactor to use "SELECT count() AS count FROM job GROUP BY count"
-        if query:
-            return len(
-                self.surreal.query(
-                    f"SELECT _ FROM run WHERE job_id == '{job_id}' AND {query}"
-                )
-            )
+        count = self.surreal.query(
+            f"SELECT count() AS count FROM job WHERE job_id == '{job_id}' GROUP BY count"  # noqa: E501
+        )
 
-        return len(self.surreal.query(f"SELECT _ FROM run WHERE job_id == '{job_id}'"))
+        if not count:
+            return 0
+
+        return int(count[0]["count"])
 
     def run_task(
         self,
         run_id: str,
         task_id: str,
         function: str,
-        description: str,
         inputs: dict,
-        max_retries: int,
+        max_retries: int = 0,
+        description: str = None,
         parent: str = None,
-    ):
+    ) -> Task:
         """Run a task inside of a job
 
         Args:
@@ -253,40 +263,42 @@ class SurrealDatabase(Database):
                 f"UPDATE task:{parent} SET children += ['task:{task_id}']"
             )
 
-        return insert
+        return Task.from_list(insert)
 
     def get_task_run(
         self,
         task_id: str,
-    ):
+    ) -> Task:
         """Get a task run
 
         Args:
             task_id (str): The unique task run ID
         """
-        return self.surreal.get(f"task:{task_id}")
+        return Task.from_list(self.surreal.get(f"task:{task_id}"))
 
     def get_task_runs(
         self,
         run_id: str,
-    ):
+    ) -> List[Task]:
         """Get all the run tasks for a given run
 
         Args:
             run_id (str): The id of the run to get tasks for
         """
         # Should return metadata about the tasks, not all information
-        return self.surreal.query(f"SELECT * FROM task WHERE run_id == '{run_id}'")
+        return Task.from_list(
+            self.surreal.query(f"SELECT * FROM task WHERE run_id == '{run_id}'")
+        )
 
     def modify_task_run(
         self,
         task_id: str,
         changes: dict,
-    ):
+    ) -> Task:
         """Update a task run
 
         Args:
             task_id (str): The unique task run ID to update
             changes (dict): key-value pairs of changes to make
         """
-        return self.surreal.update(f"run:{task_id}", changes)
+        return Task.from_list(self.surreal.update(f"run:{task_id}", changes))

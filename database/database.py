@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from .database_types import Job, DeleteJob
+from .database_types import Job, Run, Task
 
 
 class Database(ABC):
@@ -44,7 +44,7 @@ class Database(ABC):
     def delete_job(
         self,
         job_id: str,
-    ) -> DeleteJob:
+    ) -> None:
         """Delete a registered job
 
         Args:
@@ -82,7 +82,7 @@ class Database(ABC):
         run_id: str,
         tags: List[str] = None,
         version: str = None,
-    ):
+    ) -> Run:
         """Run a registered job
 
         Args:
@@ -98,7 +98,7 @@ class Database(ABC):
     def get_job_run(
         self,
         run_id: str,
-    ):
+    ) -> Run:
         """Get a job run for a specific run
 
         Args:
@@ -110,7 +110,7 @@ class Database(ABC):
     def delete_job_run(
         self,
         run_id: str,
-    ):
+    ) -> None:
         """Delete a run job
 
         Args:
@@ -123,7 +123,7 @@ class Database(ABC):
         self,
         run_id: str,
         changes: dict,
-    ):
+    ) -> Run:
         """Update a job run, if job doesn't exist, return error
 
         Args:
@@ -137,7 +137,7 @@ class Database(ABC):
         self,
         job_name: str,
         query: str = None,
-    ):
+    ) -> List[Run]:
         """Get all the runs for a specific job
 
         Args:
@@ -152,7 +152,7 @@ class Database(ABC):
         self,
         job_name: str,
         query: str = None,
-    ):
+    ) -> int:
         """Count the job runs for a specific job
 
         Args:
@@ -171,7 +171,7 @@ class Database(ABC):
         inputs: dict,
         max_retries: int,
         parent: str = None,
-    ):
+    ) -> Task:
         """Run a task inside of a job
 
         Args:
@@ -186,7 +186,7 @@ class Database(ABC):
     def get_task_run(
         self,
         task_id: str,
-    ):
+    ) -> Task:
         """Get a task run
 
         Args:
@@ -198,7 +198,7 @@ class Database(ABC):
     def get_task_runs(
         self,
         run_id: str,
-    ):
+    ) -> List[Task]:
         """Get all the run tasks for a given run
 
         Args:
@@ -212,7 +212,7 @@ class Database(ABC):
         self,
         task_id: str,
         changes: dict,
-    ):
+    ) -> Task:
         """Update a task run
 
         Args:
