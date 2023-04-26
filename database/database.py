@@ -28,7 +28,7 @@ class Database(ABC):
     @abstractmethod
     def get_job(
         self,
-        job_name: str,
+        job_id: str,
     ) -> Job:
         """Get information about a registered job
 
@@ -43,7 +43,7 @@ class Database(ABC):
     @abstractmethod
     def delete_job(
         self,
-        job_name: str,
+        job_id: str,
     ) -> DeleteJob:
         """Delete a registered job
 
@@ -58,7 +58,7 @@ class Database(ABC):
     @abstractmethod
     def get_jobs(
         self,
-        query: str,
+        query: str = None,
         workspace_id: str = None,
         node_id: str = None,
     ) -> List[Job]:
@@ -78,11 +78,10 @@ class Database(ABC):
     @abstractmethod
     def run_job(
         self,
-        job_name: str,
+        job_id: str,
         run_id: str,
-        data: dict,
         tags: List[str] = None,
-        environment: str = None,
+        version: str = None,
     ):
         """Run a registered job
 
@@ -167,7 +166,9 @@ class Database(ABC):
         self,
         run_id: str,
         task_id: str,
-        data: dict,
+        description: str,
+        inputs: dict,
+        max_retries: int,
         parent: str = None,
     ):
         """Run a task inside of a job
