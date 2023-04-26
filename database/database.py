@@ -12,12 +12,10 @@ class Database(ABC):
         workspace_id: str,
         job_name: str,
         tags: list[str] | None,
-        environment: str | None,
     ) -> RegisterJob:
         """Register a new Job, if already registered, does nothing.
 
         Args:
-            workspace_id (str): The workspace this job sits in
             job_name (str): The unique name of this job
             tags (list[str] | None): Any tags that apply to this job
             environment (str | None): The environment this job should run in
@@ -30,13 +28,11 @@ class Database(ABC):
     @abstractmethod
     def get_job(
         self,
-        workspace_id: str,
         job_name: str,
     ) -> Job:
         """Get information about a registered job
 
         Args:
-            workspace_id (str): The workspace this job sits in
             job_name (str): The unique identifier of this job
 
         Returns:
@@ -47,13 +43,11 @@ class Database(ABC):
     @abstractmethod
     def delete_job(
         self,
-        workspace_id: str,
         job_name: str,
     ) -> DeleteJob:
         """Delete a registered job
 
         Args:
-            workspace_id (str): The workspace this job sits in
             job_name (str): The unique identifier of this job
 
         Returns:
@@ -87,6 +81,7 @@ class Database(ABC):
         job_name: str,
         run_id: str,
         data: dict,
+        tags: List[str] = None,
         environment: str = None,
     ):
         """Run a registered job
@@ -95,6 +90,7 @@ class Database(ABC):
             job_name (str): The registered job unique identifier
             run_id (str): A unique identifier for this specific run
             data (dict): Any data this run should hold
+            tags (list[str]): Any tags that apply to this job run
             environment (str, optional): The environment this job ran in. Defaults to None.
         """  # noqa: E501
         ...
