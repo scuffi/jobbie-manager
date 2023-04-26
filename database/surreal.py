@@ -2,7 +2,7 @@ from typing import List
 import time
 import pysurrealdb
 
-from .database import Database, RegisterJob, Job, DeleteJob
+from .database import Database, Job, DeleteJob
 
 from config import Databases
 
@@ -24,7 +24,7 @@ class SurrealDatabase(Database):
         workspace_id: str,
         job_name: str,
         tags: list[str] | None,
-    ) -> RegisterJob:
+    ) -> Job:
         """Register a new Job, if already registered, does nothing.
 
         Args:
@@ -41,7 +41,6 @@ class SurrealDatabase(Database):
                 self.surreal.query(f"SELECT * FROM job WHERE job_name == '{job_name}'")
             )
 
-        # TODO: Wrap in a RegisterJob
         return Job.from_list(
             self.surreal.create(
                 "job",
@@ -66,7 +65,7 @@ class SurrealDatabase(Database):
         Returns:
             Job: The job
         """
-        return self.surreal.get(f"job:{job_id}")
+        return Job.from_list(self.surreal.get(f"job:{job_id}"))
 
     def delete_job(
         self,
@@ -101,9 +100,9 @@ class SurrealDatabase(Database):
         """
         # TODO: Add support for workspace and node id's
         if query:
-            return self.surreal.query(f"SELECT * FROM job WHERE {query}")
+            return Job.from_list(self.surreal.query(f"SELECT * FROM job WHERE {query}"))
 
-        return self.surreal.query("SELECT * FROM job")
+        return Job.from_list(self.surreal.query("SELECT * FROM job"))
 
     # * Job Runs
     def run_job(

@@ -27,10 +27,5 @@ class Job(BaseClass):
 
 
 @dataclass
-class RegisterJob(BaseClass):
-    ...
-
-
-@dataclass
 class DeleteJob:
     ...

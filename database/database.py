@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from .database_types import Job, RegisterJob, DeleteJob
+from .database_types import Job, DeleteJob
 
 
 class Database(ABC):
@@ -12,7 +12,7 @@ class Database(ABC):
         workspace_id: str,
         job_name: str,
         tags: list[str] | None,
-    ) -> RegisterJob:
+    ) -> Job:
         """Register a new Job, if already registered, does nothing.
 
         Args:
