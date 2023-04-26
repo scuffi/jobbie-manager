@@ -166,6 +166,7 @@ class Database(ABC):
         self,
         run_id: str,
         task_id: str,
+        function: str,
         description: str,
         inputs: dict,
         max_retries: int,

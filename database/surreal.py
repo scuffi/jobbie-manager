@@ -37,19 +37,21 @@ class SurrealDatabase(Database):
         """
 
         if len(self.surreal.query(f"SELECT _ FROM job WHERE job_name == '{job_name}'")):
-            return self.surreal.query(
-                f"SELECT _ FROM job WHERE job_name == '{job_name}'"
+            return Job.from_list(
+                self.surreal.query(f"SELECT * FROM job WHERE job_name == '{job_name}'")
             )
 
         # TODO: Wrap in a RegisterJob
-        return self.surreal.create(
-            "job",
-            {
-                "job_name": job_name,
-                "workspace": workspace_id,
-                "registered": int(time.time()),
-                "tags": tags,
-            },
+        return Job.from_list(
+            self.surreal.create(
+                "job",
+                {
+                    "job_name": job_name,
+                    "workspace": workspace_id,
+                    "registered": int(time.time()),
+                    "tags": tags,
+                },
+            )
         )
 
     def get_job(
@@ -64,8 +66,6 @@ class SurrealDatabase(Database):
         Returns:
             Job: The job
         """
-        # TODO: Wrap in a Job
-        # return self.surreal.query(f'SELECT * FROM job WHERE job_name == "{job_name}";')
         return self.surreal.get(f"job:{job_id}")
 
     def delete_job(
@@ -81,7 +81,6 @@ class SurrealDatabase(Database):
             DeleteJob: Database response
         """
         # TODO: Wrap in DeleteJob
-        # return self.surreal.query(f'DELETE job WHERE job_name == "{job_name}"')
         return self.surreal.delete(f"job:{job_id}")
 
     def get_jobs(
@@ -215,6 +214,7 @@ class SurrealDatabase(Database):
         self,
         run_id: str,
         task_id: str,
+        function: str,
         description: str,
         inputs: dict,
         max_retries: int,
@@ -237,6 +237,7 @@ class SurrealDatabase(Database):
                 "status": "running",
                 "inputs": inputs,
                 "output": None,
+                "function": function,
                 "description": description,
                 "retries": 0,
                 "max_retries": max_retries,
