@@ -36,7 +36,11 @@ class SurrealDatabase(Database):
             RegisterJob: Status of creation
         """
 
-        if len(self.surreal.query(f"SELECT _ FROM job WHERE job_name == '{job_name}'")):
+        # Count existing documents
+        existing = self.surreal.query("SELECT count() AS count FROM job GROUP BY count")
+
+        # If a job already exists with the same registered name, we can use that one
+        if existing:
             return Job.from_list(
                 self.surreal.query(f"SELECT * FROM job WHERE job_name == '{job_name}'")
             )
