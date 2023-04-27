@@ -2,8 +2,9 @@ class Endpoints:
     # ? Job endpoints
     # * Modify a defined job with a job name, in a given workspace
     REGISTER_JOB = "/job/{workspace}/{job}"
-    GET_JOB = "/job/{workspace}/{job}"
-    DELETE_JOB = "/job/{workspace}/{job}"
+    GET_JOB = "/job/{job}"
+    GET_JOBS = "/jobs"
+    DELETE_JOB = "/job/{job}"
 
     # ? Run endpoints
     # * Run a job that is registered with the given job name

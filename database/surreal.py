@@ -26,7 +26,7 @@ class SurrealDatabase(Database):
         workspace_id: str,
         job_name: str,
         tags: list[str] | None,
-    ) -> Job:
+    ) -> List[Job]:
         """Register a new Job, if already registered, does nothing.
 
         Args:
@@ -39,7 +39,9 @@ class SurrealDatabase(Database):
         """
 
         # Count existing documents
-        existing = self.surreal.query("SELECT count() AS count FROM job GROUP BY count")
+        existing = self.surreal.query(
+            f"SELECT count() AS count FROM job WHERE job_name == '{job_name}' GROUP BY count"  # noqa: E501
+        )
 
         # If a job already exists with the same registered name, we can use that one
         if existing:
@@ -71,7 +73,12 @@ class SurrealDatabase(Database):
         Returns:
             Job: The job
         """
-        return Job.from_list(self.surreal.get(f"job:{job_id}"))
+        job = self.surreal.get(f"job:{job_id}")
+
+        if job is not None:
+            return Job(**job)
+
+        return None
 
     def delete_job(
         self,
@@ -104,11 +111,23 @@ class SurrealDatabase(Database):
         Returns:
             List[Job]: _description_
         """
-        # TODO: Add support for workspace and node id's
-        if query:
-            return Job.from_list(self.surreal.query(f"SELECT * FROM job WHERE {query}"))
+        builder = "SELECT * FROM job"
 
-        return Job.from_list(self.surreal.query("SELECT * FROM job"))
+        if workspace_id or node_id or query:
+            builder = builder + " WHERE "
+
+        if workspace_id:
+            builder = builder + f"workspace_id == '{workspace_id}'"
+
+        if node_id:
+            builder = builder + f"node_id == '{node_id}'"
+
+        if query:
+            builder = builder + query
+
+        # TODO: Add limiting, and start indexes.
+
+        return Job.from_list(self.surreal.query(builder))
 
     # * Job Runs
     def run_job(

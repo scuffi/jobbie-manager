@@ -12,7 +12,7 @@ class Database(ABC):
         workspace_id: str,
         job_name: str,
         tags: list[str] | None,
-    ) -> Job:
+    ) -> List[Job]:
         """Register a new Job, if already registered, does nothing.
 
         Args:

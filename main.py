@@ -1,12 +1,11 @@
-from database.surreal import SurrealDatabase
+import uvicorn
+from fastapi import FastAPI
+
+from api import jobs_router
+
+api = FastAPI(title="Jobbie API")
+
+api.include_router(jobs_router)
 
 if __name__ == "__main__":
-    surreal = SurrealDatabase()
-
-    print(
-        surreal.register_job(
-            workspace_id="temp_workspace", job_name="my cool job 2", tags=["epic tag"]
-        )
-    )
-
-    print(surreal.get_jobs())
+    uvicorn.run("main:api", host="0.0.0.0", port=3000, reload=True)
