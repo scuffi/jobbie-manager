@@ -7,7 +7,7 @@ from database import SurrealDatabase
 
 database = SurrealDatabase()
 
-jobs_router = APIRouter()
+jobs_router = APIRouter(tags=["Jobs"])
 
 
 @jobs_router.post(Endpoints.REGISTER_JOB)

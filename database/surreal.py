@@ -18,7 +18,7 @@ class SurrealDatabase(Database):
             database="test",
         )
 
-    # TODO: Refactor so every create uses the Datatype instead, so it's always consistent
+    # TODO: Refactor so every create uses a Datatype instead, so it's always consistent
 
     # * Static Jobs
     def register_job(
@@ -144,13 +144,12 @@ class SurrealDatabase(Database):
             run_id (str): A unique identifier for this specific run
             data (dict): Any data this run should hold
             tags (list[str]): Any tags that apply to this job run
-            environment (str, optional): The environment this job ran in. Defaults to None.
         """  # noqa: E501
         return Run.from_list(
             self.surreal.create(
                 f"run:{run_id}",
                 {
-                    "job_id": job_id,  # TODO: Should this be a reference or just the ID?
+                    "job_id": job_id,  # TODO: Should this be a reference or just the ID
                     "start_time": int(time.time()),
                     "end_time": None,
                     "status": "running",
@@ -200,7 +199,7 @@ class SurrealDatabase(Database):
 
     def get_job_runs(
         self,
-        job_id: str,
+        job_id: str = None,
         query: str = None,
     ) -> List[Run]:
         """Get all the runs for a specific job
@@ -209,6 +208,7 @@ class SurrealDatabase(Database):
             job_name (str): The job id to get the runs for
             query (str, optional): Optional query to filter unwanted runs. Defaults to None.
         """  # noqa: E501
+        # TODO: Change this to not require a job_id
         if query:
             return Run.from_list(
                 self.surreal.query(
