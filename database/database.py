@@ -220,3 +220,43 @@ class Database(ABC):
             changes (dict): key-value pairs of changes to make
         """
         ...
+
+    @abstractmethod
+    def create_workspace(workspace_id: str, workspace_name: str):
+        """Create a workspace with a given name
+
+        Args:
+            workspace_id (str): Unique identifier for the workspace
+            workspace_name (str): The name of the workspace
+        """
+        ...
+
+    @abstractmethod
+    def change_workspace_permission(user: str, type: str, allow: bool):
+        """Change the permissions for a given user in this workspace.
+
+        Args:
+            user (str): The user to change permissions for
+            type (str): The 'type' of permission, i.e. 'select', 'create', 'update', etc
+            allow (bool): Is this permssion allow or not?
+        """
+        ...
+
+    @abstractmethod
+    def update_workspace(workspace_id: str, changes: dict):
+        """Update a workspace
+
+        Args:
+            workspace_id (str): The workspace to update
+            changes (dict): The changes to be made
+        """
+        ...
+
+    @abstractmethod
+    def delete_workspace(workspace_id: str):
+        """Delete a workspace
+
+        Args:
+            workspace_id (str): The workspace to delete
+        """
+        ...
